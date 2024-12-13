@@ -1,0 +1,41 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Build and Test Shipping API
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GGT_PORT: 8000
+      GGT_APP_ENV: local
+      GGT_DB_HOST: localhost
+      GGT_DB_PORT: 5432
+      GGT_DB_USERNAME: spankie_ci
+      GGT_DB_ROOT_PASSWORD: spankie_ci
+      GGT_DB_NAME: shipping
+      GGT_LOG_LEVEL: debug
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22.5'
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v6
+      with:
+        version: v1.60

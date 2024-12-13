@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: "${GYMSHARK_DB_USERNAME}"
+      POSTGRES_PASSWORD: "${GYMSHARK_DB_ROOT_PASSWORD}"
+      POSTGRES_DB: "${GYMSHARK_DB_NAME}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${GYMSHARK_USERNAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '${GYMSHARK_DB_PORT}:${GYMSHARK_DB_PORT}'
+    volumes: 
+      # - ./database/migrations/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - postgres_volume:/var/lib/postgresql/data
+    networks:
+      - gymshark
+
+networks:
+  gymshark:
+    driver: bridge
+
+volumes:
+  postgres_volume:
+    driver: local
