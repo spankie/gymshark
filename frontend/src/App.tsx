@@ -1,36 +1,52 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
+import { ChangeEvent, FormEvent, useState } from 'react'
 import './App.css'
+import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
+
+const queryClient = new QueryClient()
+
+interface Shipping {
+  pack_size: number;
+  shipping_pack_quantity: number;
+}
+
+interface Order {
+  id: number;
+  number_of_items: number;
+  created_at: string;
+  shipping: Shipping[];
+}
+
+
+async function fetchOrders() {
+  var res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/orders`, { method: "GET" });
+  if (!res.ok) throw new Error(`Response status: ${res.status}`);
+  const json = await res.json();
+  return json.data;
+}
+
 
 function App() {
   const [numItems, setNumItems] = useState(0);
-  const [orders, setOrders] = useState([
-    { id: 1, quantity: 1, created_at: '2024-04-09', updated_at: '2024-04-09' },
-  ]);
+  const { data: orders, status } = useQuery<Order[]>("orders", fetchOrders);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setNumItems(Number(e.target.value));
   }
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/orders`, {
+      method: "POST",
+      body: JSON.stringify({ number_of_items: numItems })
+    })
+    if (!res.ok) throw new Error(`Response status: ${res.status}`);
+    const order = await res.json();
+    console.log({ order });
+    alert("order have been created");
   }
 
-  async function fetchOrders() {
-    const BASE_URL = "http://localhost:8000";
-    try {
-      var res = await fetch(`${BASE_URL}/shipping`, { method: "GET" })
-      if (!res.ok) throw new Error(`Response status: ${res.status}`);
-      const json = await res.json();
-      console.log(json);
-    } catch (e) {
-      alert("error fetching orders");
-    }
-  }
-
-  useEffect(() => { fetchOrders() }, [])
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <div className="px-4 sm:px-6 lg:px-8 py-4">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
@@ -64,43 +80,46 @@ function App() {
         <div className="mt-8 flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead>
-                  <tr>
-                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
-                      Order
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Quantity
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Date Created
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Date Updated
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {orders.map((order) => (
-                    <tr key={order.id}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                        Order #{order.id}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{order.quantity}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{order.created_at}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{order.updated_at}</td>
+              {status == "success" ?
+                <table className="min-w-full divide-y divide-gray-300">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
+                        Order
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                        Quantity
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                        Date Created
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                        Packaging
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {orders ? orders.map((order: Order) => (
+                      <tr key={order.id}>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                          Order #{order.id}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{order.number_of_items}</td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{new Date(order.created_at).toLocaleString()}</td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                          {order.shipping.length ? order.shipping.map((s, key) => {
+                            return <p key={key}>{s.shipping_pack_quantity} X {s.pack_size}</p>
+                          }) : "-"}
+                        </td>
+                      </tr>
+                    )) : ""}
+                  </tbody>
+                </table> : "No orders available"}
             </div>
           </div>
         </div>
       </div>
-
-
-    </>
+    </QueryClientProvider>
   )
 }
 
