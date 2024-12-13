@@ -28,7 +28,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.POST("/orders", s.CreateOrderHandler)
 	r.GET("/orders/:id", s.GetOrderHandler)
 
-	r.GET("/shipping", s.GetOrderShippingHandler)
+	r.GET("/orders", s.GetAllOrdersHandler)
 
 	return r
 }

@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"log/slog"
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +18,7 @@ func (s *Server) CreateOrderHandler(c *gin.Context) {
 	err := decode(c, &orderRequest)
 	if err != nil {
 		slog.Debug(fmt.Sprintf("Error decoding order request: %v", err))
-		badRequest(c)
+		badRequest(c, "")
 		return
 	}
 
@@ -28,38 +27,38 @@ func (s *Server) CreateOrderHandler(c *gin.Context) {
 	}
 	err = s.orderService.CreateOrder(c.Request.Context(), order)
 	if err != nil {
-		respondJSON(c, http.StatusInternalServerError, nil)
+		internalServerError(c)
 		return
 	}
 
-	respondJSON(c, http.StatusCreated, gin.H{"id": order.ID})
+	created(c, "order created successfully", order)
 }
 
 func (s *Server) GetOrderHandler(c *gin.Context) {
 	orderIDString := c.Param("id")
 	orderID, err := strconv.Atoi(orderIDString)
 	if err != nil {
-		respondJSON(c, http.StatusBadRequest, gin.H{
-			"error": err,
-		})
+		badRequest(c, err.Error())
 		return
 	}
+
 	order, err := s.db.GetOrder(c.Request.Context(), orderID)
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("error getting order: %v", err))
 		notFound(c)
+		return
 	}
 
-	respondJSON(c, http.StatusOK, order)
+	ok(c, "successful", order)
 }
 
-func (s *Server) GetOrderShippingHandler(c *gin.Context) {
-	shipping, err := s.db.GetOrderShipping(c.Request.Context())
+func (s *Server) GetAllOrdersHandler(c *gin.Context) {
+	shipping, err := s.db.GetOrdersShipping(c.Request.Context())
 	if err != nil {
 		errMessage := fmt.Sprintf("error getting order: %v", err)
 		s.logger.Error(errMessage)
 		internalServerError(c)
 	}
 
-	respondJSON(c, http.StatusOK, shipping)
+	ok(c, "successful", shipping)
 }

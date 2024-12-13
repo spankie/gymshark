@@ -10,8 +10,8 @@ type dpEntry struct {
 	pack  int
 }
 
-// FindOptimalPacks takes a sorted ascending list of available pack sizes
-func FindOptimalPacks(packSizes []int, N int) map[int]int { //nolint:cyclop
+// findOptimalPacks takes a sorted ascending list of available pack sizes
+func findOptimalPacks(packSizes []int, N int) map[int]int { //nolint:cyclop
 	if len(packSizes) < 1 {
 		return nil
 	}

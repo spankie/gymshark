@@ -69,7 +69,7 @@ func TestCalculatePack(t *testing.T) {
 	var packSizes = []int{5000, 2000, 1000, 500, 250}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := FindOptimalPacks(packSizes, tc.order)
+			result := findOptimalPacks(packSizes, tc.order)
 			if len(result) != len(tc.expectedResult) {
 				t.Errorf("number of entries should match, expected: %v; got %v", len(tc.expectedResult), len(result))
 			}

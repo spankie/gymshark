@@ -18,7 +18,7 @@ type Service interface {
 	CreateOrder(ctx context.Context, order *models.Order, orderShipping []*models.OrderShipping) error
 	GetOrder(ctx context.Context, id int) (*models.Order, error)
 	GetAvailableShippingPacks(ctx context.Context) ([]models.ShippingPack, error)
-	GetOrderShipping(ctx context.Context) ([]models.OrderShipping, error)
+	GetOrdersShipping(ctx context.Context) ([]models.Order, error)
 }
 
 type postgresService struct {
@@ -79,9 +79,9 @@ func (ps *postgresService) CreateOrder(ctx context.Context, order *models.Order,
 		return fmt.Errorf("unable to start db transaction: %w", err)
 	}
 
-	query := `INSERT INTO orders (id, number_of_items) VALUES (DEFAULT, $1) RETURNING id`
+	query := `INSERT INTO orders (id, number_of_items) VALUES (DEFAULT, $1) RETURNING id, number_of_items, created_at, updated_at`
 	row := tx.QueryRowContext(ctx, query, order.NumberOfItems)
-	err = row.Scan(&order.ID)
+	err = row.Scan(&order.ID, &order.NumberOfItems, &order.CreatedAt, &order.UpdateAt)
 	if err != nil {
 		return errors.Join(fmt.Errorf("could not insert order: %w", err), rollback(tx))
 	}
@@ -165,21 +165,35 @@ func (ps *postgresService) GetAvailableShippingPacks(ctx context.Context) ([]mod
 	return packs, nil
 }
 
-func (ps *postgresService) GetOrderShipping(ctx context.Context) ([]models.OrderShipping, error) {
-	query := `SELECT id, order_id, pack_size, shipping_pack_quantity, created_at, updated_at FROM order_shipping ORDER BY created_at DESC`
+func (ps *postgresService) GetOrdersShipping(ctx context.Context) ([]models.Order, error) {
+	query := `select o.id, o.number_of_items, o.created_at, s.pack_size, s.shipping_pack_quantity from orders o join order_shipping s on o.id = s.order_id ORDER BY o.created_at DESC;`
 	rows, err := ps.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("error getting order shipping from db: %v", err)
 	}
-	orderShipping := []models.OrderShipping{}
+
+	orderMap := make(map[int]models.Order)
 	for rows.Next() {
+		order := models.Order{}
 		s := models.OrderShipping{}
-		err := rows.Scan(&s.ID, &s.OrderID, &s.PackSize, &s.ShippingPackQuantity, &s.CreatedAt, &s.UpdatedAt)
+		err := rows.Scan(&order.ID, &order.NumberOfItems, &order.CreatedAt, &s.PackSize, &s.ShippingPackQuantity)
 		if err != nil {
 			return nil, err
 		}
-		orderShipping = append(orderShipping, s)
+		if _, ok := orderMap[order.ID]; ok {
+			temp := orderMap[order.ID]
+			temp.Shipping = append(temp.Shipping, s)
+			orderMap[order.ID] = temp
+		} else {
+			order.Shipping = append(order.Shipping, s)
+			orderMap[order.ID] = order
+		}
 	}
 
-	return orderShipping, nil
+	orders := make([]models.Order, 0, len(orderMap))
+	for _, v := range orderMap {
+		orders = append(orders, v)
+	}
+
+	return orders, nil
 }

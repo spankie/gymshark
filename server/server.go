@@ -20,8 +20,9 @@ type Server struct {
 }
 
 type response struct {
-	Message string `json:"message,omitempty"`
-	Error   string `json:"error,omitempty"`
+	Data    interface{} `json:"data"`
+	Message string      `json:"message"`
+	Error   string      `json:"error"`
 }
 
 func NewServer(config *config.Configuration, dbService database.Service,
@@ -59,24 +60,33 @@ func decode(c *gin.Context, v interface{}) error {
 	return nil
 }
 
-func respondJSON(c *gin.Context, status int, data interface{}) {
-	c.JSON(status, data)
+func respondJSON(c *gin.Context, status int, message, err string, data interface{}) {
+	c.JSON(status, response{
+		Data:    data,
+		Message: message,
+		Error:   err,
+	})
 }
 
-func badRequest(c *gin.Context) {
-	respondJSON(c, http.StatusBadRequest, response{
-		Error: "bad request",
-	})
+func ok(c *gin.Context, message string, data interface{}) {
+	respondJSON(c, http.StatusOK, message, "", data)
+}
+
+func created(c *gin.Context, message string, data interface{}) {
+	respondJSON(c, http.StatusCreated, message, "", data)
+}
+
+func badRequest(c *gin.Context, err string) {
+	if err == "" {
+		err = "bad request"
+	}
+	respondJSON(c, http.StatusBadRequest, "", err, nil)
 }
 
 func internalServerError(c *gin.Context) {
-	respondJSON(c, http.StatusInternalServerError, response{
-		Error: "internal server error",
-	})
+	respondJSON(c, http.StatusInternalServerError, "", "bad request", nil)
 }
 
 func notFound(c *gin.Context) {
-	respondJSON(c, http.StatusNotFound, response{
-		Error: "not found",
-	})
+	respondJSON(c, http.StatusNotFound, "", "bad request", nil)
 }

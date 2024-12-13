@@ -44,7 +44,7 @@ func TestCreateOrderHandler(t *testing.T) { //nolint:cyclop
 					t.Errorf("failed to decode response body: %v", err)
 				}
 
-				id, ok := respMap["id"]
+				id, ok := respMap["data"].(map[string]interface{})["id"]
 				if !ok || id == 0 {
 					t.Fatalf("expected id in response, got %v", respMap)
 				}
@@ -79,7 +79,7 @@ func TestCreateOrderHandler(t *testing.T) { //nolint:cyclop
 					t.Errorf("failed to decode response body: %v", err)
 				}
 
-				id, ok := respMap["id"]
+				id, ok := respMap["data"].(map[string]interface{})["id"]
 				if !ok || id == 0 {
 					t.Fatalf("expected id in response, got %v", respMap)
 				}
@@ -179,7 +179,11 @@ func TestGetOrderHandler(t *testing.T) { //nolint:cyclop
 				if err != nil {
 					t.Errorf("failed to decode response body: %v", err)
 				}
-				if respMap["id"].(float64) != float64(order.ID) {
+				data, ok := respMap["data"].(map[string]interface{})
+				if !ok {
+					t.Fatalf("data should me map[string]interface{} but got: %v", respMap["data"])
+				}
+				if data["id"].(float64) != float64(order.ID) {
 					t.Errorf("expected response to have id of %d, but got %v", order.ID, respMap["id"])
 				}
 
@@ -226,7 +230,7 @@ func TestGetOrderHandler(t *testing.T) { //nolint:cyclop
 	}
 }
 
-func TestGetOrderShippingHandler(t *testing.T) {
+func TestGetAllOrderHandler(t *testing.T) {
 	conf := getDefaultConfig()
 	dbService := createDBAndHTTPServer(t, &conf)
 
@@ -248,7 +252,7 @@ func TestGetOrderShippingHandler(t *testing.T) {
 		t.Fatalf("failed to create order: %v", err)
 	}
 
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/shipping", conf.Port))
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/orders", conf.Port))
 	if err != nil {
 		t.Errorf("failed to make request to server: %v", err)
 	}
@@ -263,13 +267,22 @@ func TestGetOrderShippingHandler(t *testing.T) {
 		t.Fatalf("expected status code %d, got %d", http.StatusOK, resp.StatusCode)
 	}
 
-	shipping := []models.OrderShipping{}
-	err = json.NewDecoder(resp.Body).Decode(&shipping)
+	resBody := response{
+		Data: []models.Order{},
+	}
+	err = json.NewDecoder(resp.Body).Decode(&resBody)
 	if err != nil {
 		t.Fatalf("unable to decode response: %v", err)
 	}
 
-	if len(shipping) != 2 {
-		t.Fatalf("expected len of shipping to be %d but got %v", 2, len(shipping))
+	orders := resBody.Data.([]interface{})
+	if len(orders) != 1 {
+		t.Fatalf("expected len of orders to be %d but got %v", 1, len(orders))
+	}
+
+	shipping := orders[0].(map[string]interface{})["shipping"]
+	l := len(shipping.([]interface{}))
+	if l != 2 {
+		t.Fatalf("expected len of shipping to be %d but got %v", 2, l)
 	}
 }

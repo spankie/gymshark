@@ -9,22 +9,18 @@ import (
 )
 
 func (s *Server) HelloWorldHandler(c *gin.Context) {
-	respondJSON(c, http.StatusOK, response{
-		Message: "shipping Orders Api",
-	})
+	ok(c, "shipping Orders Api", nil)
 }
 
 func (s *Server) healthHandler(c *gin.Context) {
 	_, err := s.db.Health(c.Request.Context())
 	if err != nil {
 		slog.Debug(fmt.Sprintf("Error checking database health: %v", err))
-		respondJSON(c, http.StatusServiceUnavailable, response{
+		respondJSON(c, http.StatusServiceUnavailable, "", "service unavailable", response{
 			Error: "database is down",
 		})
 		return
 	}
 
-	respondJSON(c, http.StatusOK, response{
-		Message: "all systems are healthy",
-	})
+	ok(c, "all systems are healthy", nil)
 }

@@ -37,7 +37,7 @@ func (s service) CreateOrder(ctx context.Context, order *models.Order) error {
 		return fmt.Errorf("no packs to ship")
 	}
 
-	shippingPacks := FindOptimalPacks(packSlice, order.NumberOfItems)
+	shippingPacks := findOptimalPacks(packSlice, order.NumberOfItems)
 	err = s.db.CreateOrder(ctx, order, getOrderShipping(shippingPacks))
 	if err != nil {
 		err := fmt.Errorf("Error creating order: %w", err)

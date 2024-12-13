@@ -1,17 +1,17 @@
 package models
 
 type ShippingPack struct {
-	ID        int
-	Quantity  int
-	CreatedAt string
-	UpdateAt  string
+	ID        int    `json:"id"`
+	Quantity  int    `json:"quantity"`
+	CreatedAt string `json:"created_at"`
+	UpdateAt  string `json:"updated_at"`
 }
 
 type OrderShipping struct {
-	ID                   int
-	OrderID              int
-	PackSize             int
-	ShippingPackQuantity int
-	CreatedAt            string
-	UpdatedAt            string
+	ID                   int    `json:"id"`
+	OrderID              int    `json:"order_id"`
+	PackSize             int    `json:"pack_size"`
+	ShippingPackQuantity int    `json:"shipping_pack_quantity"`
+	CreatedAt            string `json:"created_at"`
+	UpdateAt             string `json:"updated_at"`
 }
