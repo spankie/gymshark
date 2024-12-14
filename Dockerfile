@@ -1,5 +1,5 @@
 # Specifies a parent image
-FROM golang:1.22.5-alpine
+FROM golang:1.23-alpine
  
 # Creates an app directory to hold your app’s source code
 WORKDIR /app
