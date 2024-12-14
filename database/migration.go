@@ -15,7 +15,7 @@ import (
 )
 
 // MigrateDb migrates the database to the latest version
-// NOTE: this needs to create its own connection because calling m.Close closes the db connection
+// NOTE: this is creating its own connection because calling m.Close closes the db connection
 func MigrateDb(dbURI string) error {
 	db, err := sql.Open("postgres", dbURI)
 	if err != nil {
