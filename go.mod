@@ -3,6 +3,7 @@ module github.com/spankie/gymshark
 go 1.23.0
 
 require (
+	github.com/aws/aws-lambda-go v1.47.0
 	github.com/docker/go-connections v0.5.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0

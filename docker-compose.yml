@@ -4,7 +4,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: "${GYMSHARK_DB_USERNAME}"
-      POSTGRES_PASSWORD: "${GYMSHARK_DB_ROOT_PASSWORD}"
+      POSTGRES_PASSWORD: "${GYMSHARK_DB_PASSWORD}"
       POSTGRES_DB: "${GYMSHARK_DB_NAME}"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${GYMSHARK_USERNAME}" ]

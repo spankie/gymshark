@@ -12,8 +12,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// TODO: configure the gin logger to use slog to be consistent with the
 	// rest of the application
 	r := gin.Default()
+
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"}, // TODO: change this to the actual domain
+		AllowOrigins:     []string{"http://localhost:5173", s.config.FrontendURL},
 		AllowMethods:     []string{"PUT", "PATCH", "POST", "GET", "OPTIONS", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"},
 		ExposeHeaders:    []string{"Content-Length", "Content-Type"},

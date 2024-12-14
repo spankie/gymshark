@@ -25,9 +25,13 @@ type postgresService struct {
 	db *sql.DB
 }
 
+func getConnectionString(port int, host, username, password, dbname string) string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=require", username, password, host, port, dbname)
+}
+
 // getDBConnection returns a connection to the postgres database
 func getDBConnection(port int, host, username, password, dbname string) (*sql.DB, error) {
-	connectionString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", username, password, host, port, dbname)
+	connectionString := getConnectionString(port, host, username, password, dbname)
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to database: %w", err)
@@ -52,7 +56,7 @@ func NewPostgresDBService(port int, host, username, password, dbname string) (Se
 		return nil, fmt.Errorf("could not ping database: %w", err)
 	}
 
-	err = MigrateDb(fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", username, password, host, port, dbname))
+	err = MigrateDb(getConnectionString(port, host, username, password, dbname))
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate database: %w", err)
 	}
