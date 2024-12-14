@@ -8,19 +8,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (s *Server) setupCorsConfig(r *gin.Engine) {
+	if s.config.FrontendURL != "" {
+		corsConfig := cors.Config{
+			AllowOrigins:     []string{s.config.FrontendURL},
+			AllowMethods:     []string{"PUT", "PATCH", "POST", "GET", "OPTIONS", "DELETE"},
+			AllowHeaders:     []string{"Origin", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"},
+			ExposeHeaders:    []string{"Content-Length", "Content-Type"},
+			AllowCredentials: true,
+			MaxAge:           12 * time.Hour,
+		}
+		r.Use(cors.New(corsConfig))
+	}
+
+}
+
 func (s *Server) RegisterRoutes() http.Handler {
-	// TODO: configure the gin logger to use slog to be consistent with the
-	// rest of the application
 	r := gin.Default()
 
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", s.config.FrontendURL},
-		AllowMethods:     []string{"PUT", "PATCH", "POST", "GET", "OPTIONS", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"},
-		ExposeHeaders:    []string{"Content-Length", "Content-Type"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+	s.setupCorsConfig(r)
 
 	r.GET("/", s.HelloWorldHandler)
 

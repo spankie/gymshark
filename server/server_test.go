@@ -53,6 +53,7 @@ func createDBAndHTTPServer(t *testing.T, conf *config.Configuration) database.Se
 	database.CreatePostgresDBContainer(t, conf)
 	dbService, err := database.NewPostgresDBService(
 		conf.DbPort,
+		conf.EnableDBSSL,
 		conf.DbHost,
 		conf.DbUsername,
 		conf.DbPassword,

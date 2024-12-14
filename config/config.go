@@ -16,6 +16,7 @@ type Configuration struct {
 	DbName      string `envconfig:"db_name" default:"spankie"`
 	LogLevel    string `envconfig:"log_level" default:"info"`
 	FrontendURL string `envconfig:"frontend_url"`
+	EnableDBSSL bool   `envconfig:"enable_db_ssl" default:"false"`
 }
 
 // GetConfig create a configuration object from the environment variables,

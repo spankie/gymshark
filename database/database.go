@@ -25,13 +25,17 @@ type postgresService struct {
 	db *sql.DB
 }
 
-func getConnectionString(port int, host, username, password, dbname string) string {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=require", username, password, host, port, dbname)
+func getConnectionString(port int, enableSSL bool, host, username, password, dbname string) string {
+	sslmode := "disable"
+	if enableSSL {
+		sslmode = "require"
+	}
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s", username, password, host, port, dbname, sslmode)
 }
 
 // getDBConnection returns a connection to the postgres database
-func getDBConnection(port int, host, username, password, dbname string) (*sql.DB, error) {
-	connectionString := getConnectionString(port, host, username, password, dbname)
+func getDBConnection(port int, enableSSL bool, host, username, password, dbname string) (*sql.DB, error) {
+	connectionString := getConnectionString(port, enableSSL, host, username, password, dbname)
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to database: %w", err)
@@ -42,8 +46,8 @@ func getDBConnection(port int, host, username, password, dbname string) (*sql.DB
 
 // NewPostgresDBService creates a new postgres database connection and returns an
 // implementation of db service
-func NewPostgresDBService(port int, host, username, password, dbname string) (Service, error) {
-	db, err := getDBConnection(port, host, username, password, dbname)
+func NewPostgresDBService(port int, enableSSL bool, host, username, password, dbname string) (Service, error) {
+	db, err := getDBConnection(port, enableSSL, host, username, password, dbname)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +60,7 @@ func NewPostgresDBService(port int, host, username, password, dbname string) (Se
 		return nil, fmt.Errorf("could not ping database: %w", err)
 	}
 
-	err = MigrateDb(getConnectionString(port, host, username, password, dbname))
+	err = MigrateDb(getConnectionString(port, enableSSL, host, username, password, dbname))
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate database: %w", err)
 	}

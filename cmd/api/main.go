@@ -84,8 +84,8 @@ func main() {
 	}
 
 	dbService, err := database.NewPostgresDBService(
-		conf.DbPort, conf.DbHost, conf.DbUsername,
-		conf.DbPassword, conf.DbName,
+		conf.DbPort, conf.EnableDBSSL, conf.DbHost,
+		conf.DbUsername, conf.DbPassword, conf.DbName,
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error creating database service: %v", err)
