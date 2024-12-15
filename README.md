@@ -51,7 +51,7 @@ running. Below are the steps to run the code:
         export GYMSHARK_DB_NAME=changedatabasename
         export GYMSHARK_ENABLE_DB_SSL=false
         export GYMSHARK_LOG_LEVEL=debug
-        export GYMSHARK_FRONTEND_URL=http://localhost:5173
+        export GYMSHARK_FRONTEND_URL=http://localhost:8080
       ```
    - If you don't have a postgres instance running on your machine,
       you can use the provided docker-compose file to start a postgres container.
