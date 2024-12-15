@@ -38,10 +38,10 @@ func NewServer(config *config.Configuration, dbService database.Service,
 }
 
 // NewHTTPServer creates a new http server instance
-func NewHTTPServer(port string, handler http.Handler) *http.Server {
+func (s *Server) NewHTTPServer() *http.Server {
 	server := &http.Server{
-		Addr:         port,
-		Handler:      handler,
+		Addr:         fmt.Sprintf(":%s", s.config.Port),
+		Handler:      s.RegisterRoutes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,

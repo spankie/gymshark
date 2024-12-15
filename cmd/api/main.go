@@ -88,14 +88,12 @@ func main() {
 		conf.DbUsername, conf.DbPassword, conf.DbName,
 	)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error creating database service: %v", err)
+		logger.Error("error creating database service", "error", err)
 		os.Exit(1)
 	}
 
 	orderService := services.NewOrderService(dbService, logger)
 	appServer := server.NewServer(conf, dbService, orderService, logger)
 
-	port := fmt.Sprintf(":%s", conf.Port)
-	handler := appServer.RegisterRoutes()
-	run(server.NewHTTPServer(port, handler), logger)
+	run(appServer.NewHTTPServer(), logger)
 }

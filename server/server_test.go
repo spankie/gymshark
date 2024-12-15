@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -23,10 +22,7 @@ func setupHTTPServer(t *testing.T, conf *config.Configuration, dbService databas
 	orderService := services.NewOrderService(dbService, logger)
 
 	server := NewServer(conf, dbService, orderService, logger)
-
-	port := fmt.Sprintf(":%s", conf.Port)
-	handler := server.RegisterRoutes()
-	httpServer := NewHTTPServer(port, handler)
+	httpServer := server.NewHTTPServer()
 	if httpServer == nil {
 		t.Error("server creation failed")
 	}
@@ -43,7 +39,7 @@ func setupHTTPServer(t *testing.T, conf *config.Configuration, dbService databas
 		defer cancel()
 
 		if err := httpServer.Shutdown(ctx); err != nil {
-			log.Fatalf("failed to shutdown server: %s", err)
+			t.Fatalf("failed to shutdown server: %v", err)
 		}
 	})
 }

@@ -30,8 +30,6 @@ func CreatePostgresDBContainer(t *testing.T, conf *config.Configuration) {
 	t.Helper()
 	postgresContainer, err := postgres.Run(context.Background(),
 		"docker.io/postgres:14.1-alpine",
-		// postgres.WithInitScripts(filepath.Join("../fixtures", "db_init.sh")),
-		// postgres.WithConfigFile(filepath.Join("../fixtures", "my-postgres.conf")),
 		postgres.WithDatabase(conf.DbName),
 		postgres.WithUsername(conf.DbUsername),
 		postgres.WithPassword(conf.DbPassword),
