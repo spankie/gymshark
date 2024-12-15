@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +14,7 @@ func (s *Server) HelloWorldHandler(c *gin.Context) {
 func (s *Server) healthHandler(c *gin.Context) {
 	_, err := s.db.Health(c.Request.Context())
 	if err != nil {
-		slog.Debug(fmt.Sprintf("Error checking database health: %v", err))
+		s.logger.Debug(fmt.Sprintf("Error checking database health: %v", err))
 		respondJSON(c, http.StatusServiceUnavailable, "", "service unavailable", response{
 			Error: "database is down",
 		})

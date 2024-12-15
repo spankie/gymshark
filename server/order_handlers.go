@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"log/slog"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +16,7 @@ func (s *Server) CreateOrderHandler(c *gin.Context) {
 	var orderRequest CreateOrderRequest
 	err := decode(c, &orderRequest)
 	if err != nil {
-		slog.Debug(fmt.Sprintf("Error decoding order request: %v", err))
+		s.logger.Debug(fmt.Sprintf("Error decoding order request: %v", err))
 		badRequest(c, "")
 		return
 	}
