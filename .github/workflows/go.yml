@@ -13,15 +13,6 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    env:
-      GGT_PORT: 8000
-      GGT_APP_ENV: local
-      GGT_DB_HOST: localhost
-      GGT_DB_PORT: 5432
-      GGT_DB_USERNAME: spankie_ci
-      GGT_DB_ROOT_PASSWORD: spankie_ci
-      GGT_DB_NAME: shipping
-      GGT_LOG_LEVEL: debug
     steps:
     - uses: actions/checkout@v4
 
