@@ -27,6 +27,7 @@ async function fetchOrders() {
 
 function App() {
   const [numItems, setNumItems] = useState(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { data: orders, status } = useQuery<Order[]>("orders", fetchOrders);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
@@ -35,14 +36,19 @@ function App() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/orders`, {
-      method: "POST",
-      body: JSON.stringify({ number_of_items: numItems })
-    })
-    if (!res.ok) throw new Error(`Response status: ${res.status}`);
-    const order = await res.json();
-    console.log({ order });
-    alert("order have been created");
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/orders`, {
+        method: "POST",
+        body: JSON.stringify({ number_of_items: numItems })
+      })
+      if (!res.ok) throw new Error(`Response status: ${res.status}`);
+      alert("order have been created");
+    } catch (e) {
+      alert("could not create order");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -70,7 +76,8 @@ function App() {
               </div>
               <button
                 type="submit"
-                className="inline-block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                disabled={isLoading}
+                className="inline-block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm disabled:bg-indigo-500 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Add Order
               </button>
